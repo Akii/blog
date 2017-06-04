@@ -1,7 +1,45 @@
-<ul>
+<ul class="post-list">
     $for(posts)$
-        <li>
-            <a href="$url$">$title$</a> - $date$
-        </li>
+    <li>
+        <!-- begin post-left-info -->
+        <div class="post-left-info">
+            <div class="post-date">
+                <span class="day">$day$</span>
+                <span class="month">$month$</span>
+            </div>
+            $if(discussId)$
+            <div class="post-likes">
+                <i class="fa fa-comment-o"></i>
+                <span class="number disqus-comment-count" data-disqus-identifier="$discussId$">0</span>
+            </div>
+            $endif$
+        </div>
+        <!-- end post-left-info -->
+        <!-- begin post-content -->
+        <div class="post-content">
+            <!-- end post-image -->
+            <!-- begin post-info -->
+            <div class="post-info">
+                <h4 class="post-title">
+                    <a href="$url$">$title$</a>
+                </h4>
+                <div class="post-by">
+                    Posted by $author$ <span class="divider">|</span> $tags$
+                </div>
+                <div class="post-desc">
+                    $if(summary)$
+                        $summary$
+                    $else$
+                        <i>No summary available</i>
+                    $endif$
+                </div>
+            </div>
+            <!-- end post-info -->
+            <!-- begin read-btn-container -->
+            <div class="read-btn-container">
+                <a href="$url$">Read More <i class="fa fa-angle-double-right"></i></a>
+            </div>
+        </div>
+    </li>
     $endfor$
 </ul>

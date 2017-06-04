@@ -1,33 +1,124 @@
-<!doctype html>
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if !IE]><!-->
 <html lang="en">
+    <!--<![endif]-->
     <head>
-        <meta charset="utf-8">
-        <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>My Hakyll Blog - $title$</title>
-        <link rel="stylesheet" href="/css/default.css" />
+	      <meta charset="utf-8" />
+	      <title>Boring Haskell | $title$</title>
+	      <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+	      $if(author)$
+	      <meta content="$author$" name="author" />
+	      $endif$
+	      $if(summary)$
+	      <meta content="$summary$" name="description" />
+	      $endif$
+
+	      <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+	      <link href="/assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+	      <link href="/assets/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+	      <link href="/assets/css/animate.min.css" rel="stylesheet" />
+	      <link href="/assets/css/style.min.css" rel="stylesheet" />
+	      <link href="/assets/css/style-responsive.min.css" rel="stylesheet" />
+	      <link href="/assets/css/theme/blue.css" id="theme" rel="stylesheet" />
     </head>
     <body>
-        <div id="header">
-            <div id="logo">
-                <a href="/">My Hakyll Blog</a>
-            </div>
-            <div id="navigation">
-                <a href="/">Home</a>
-                <a href="/about.html">About</a>
-                <a href="/contact.html">Contact</a>
-                <a href="/archive.html">Archive</a>
-            </div>
+        <div id="header" class="header navbar navbar-default navbar-fixed-top">
+	          <div class="container">
+		            <div class="navbar-header">
+			              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#header-navbar">
+				                <span class="icon-bar"></span>
+				                <span class="icon-bar"></span>
+				                <span class="icon-bar"></span>
+			              </button>
+			              <a href="/" class="navbar-brand">
+				                <span class="brand-logo" style="border: none;">
+					                  <img src="/assets/img/HaskellLogoStyPreview-1.png" width="24" height="24" />
+				                </span>
+				                <span class="brand-text">Boring Haskell</span>
+			              </a>
+		            </div>
+		            <div class="collapse navbar-collapse" id="header-navbar">
+			              <ul class="nav navbar-nav navbar-right">
+				                <li class="dropdown">
+					                  <a href="/">HOME</a>
+				                </li>
+                        <!--
+				                     <li><a href="/about.html">ABOUT ME</a></li>
+				                     <li><a href="/contact.html">CONTACT</a></li>
+                           -->
+				                <li><a href="/archive.html">ARCHIVE</a></li>
+			              </ul>
+		            </div>
+	          </div>
         </div>
 
-        <div id="content">
-            <h1>$title$</h1>
-            $body$
+        $if(showPageTitle)$
+        <div id="page-title" class="page-title has-bg">
+	          <div class="bg-cover"><img src="/assets/img/cover2.jpg"/></div>
+	          <div class="container">
+		            <h1>Boring Haskell</h1>
+		            <p>Just me, doing boring stuff with Haskell</p>
+	          </div>
+        </div>
+        $endif$
+
+        <div id="content" class="content">
+	          <div class="container">
+		            <div class="row row-space-30">
+			              <div class="col-md-9">
+				                $body$
+			              </div>
+			              <div class="col-md-3">
+                        <!--
+				                <div class="section-container">
+					                  <h4 class="section-title"><span>Recent Posts</span></h4>
+					                  <ul class="sidebar-recent-post">
+						                    <li>
+							                      <div class="info">
+								                        <h4 class="title"><a href="#">Will be shown as soon as I set up Hakyll correctly.</a></h4>
+								                        <div class="date">not now</div>
+							                      </div>
+						                    </li>
+					                  </ul>
+				                </div>
+                        -->
+				                <div class="section-container">
+					                  <h4 class="section-title"><span>Follow me</span></h4>
+					                  <ul class="sidebar-social-list">
+						                    <li><a href="https://twitter.com/AkiiZedd"><i class="fa fa-twitter"></i></a></li>
+						                    <li><a href="https://github.com/Akii"><i class="fa fa-github"></i></a></li>
+						                    <li><a href="https://www.xing.com/profile/Philipp_Maier65"><i class="fa fa-xing"></i></a></li>
+					                  </ul>
+				                </div>
+			              </div>
+		            </div>
+	          </div>
         </div>
 
-        <div id="footer">
-            Site proudly generated by
-            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        <div id="footer-copyright" class="footer-copyright">
+	          <div class="container">
+		            &copy; 2017 Philipp Maier
+		            <span class="pull-right">Site proudly generated by <a href="http://jaspervdj.be/hakyll">Hakyll</a></span>
+	          </div>
         </div>
+
+        <script src="/assets/plugins/jquery/jquery-1.9.1.min.js"></script>
+        <script src="/assets/plugins/jquery/jquery-migrate-1.1.0.min.js"></script>
+        <script src="/assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+        <!--[if lt IE 9]>
+            <script src="/assets/crossbrowserjs/html5shiv.js"></script>
+            <script src="/assets/crossbrowserjs/respond.min.js"></script>
+            <script src="/assets/crossbrowserjs/excanvas.min.js"></script>
+        <![endif]-->
+        <script src="/assets/plugins/jquery-cookie/jquery.cookie.js"></script>
+        <script src="/assets/js/apps.min.js"></script>
+
+        <script>
+	       $(document).ready(function() {
+		         App.init();
+	       });
+        </script>
+        <script id="dsq-count-scr" src="//boring-haskell.disqus.com/count.js" async></script>
     </body>
 </html>

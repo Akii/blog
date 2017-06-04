@@ -1,17 +1,16 @@
---------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
+
 import           Data.Monoid (mappend)
-import           Hakyll
+import           Hakyll      hiding (defaultContext)
+import qualified Hakyll      as Hakyll
 
-
---------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
-    match "images/*" $ do
+    match "assets/**" $ do
         route   idRoute
         compile copyFileCompiler
 
-    match "css/*" $ do
+    match "raw/**" $ do
         route   idRoute
         compile compressCssCompiler
 
@@ -59,9 +58,14 @@ main = hakyll $ do
 
     match "templates/*" $ compile templateBodyCompiler
 
-
---------------------------------------------------------------------------------
 postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
-    defaultContext
+    dateField "day" "%e" `mappend`
+    dateField "month" "%B" `mappend`
+    Hakyll.defaultContext
+
+defaultContext :: Context String
+defaultContext =
+  boolField "showPageTitle" (const True) `mappend`
+  Hakyll.defaultContext

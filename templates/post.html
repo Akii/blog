@@ -1,8 +1,27 @@
-<div class="info">
-    Posted on $date$
-    $if(author)$
-        by $author$
-    $endif$
+<h1>$title$</h1>
+<div class="post-by">
+    Posted by $author$ <span class="divider">|</span> $date$ <span class="divider">|</span> $tags$
 </div>
 
-$body$
+<div class="section-container">
+    $body$
+</div>
+
+$if(discussId)$
+<div class="section-container">
+    <h4 class="section-title"><span>All Comments</span></h4>
+    <div id="disqus_thread"></div>
+</div>
+<script>
+    var disqus_config = function () {
+        this.page.url = window.location.protocol + "//" + window.location.host + "$url$";
+        this.page.identifier = "$discussId$";
+    };
+    (function() {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://boring-haskell.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+$endif$
