@@ -3,7 +3,7 @@ title: Eventsourced aggregates in Haskell
 author: Philipp Maier
 summary:
   Introduction to projections and event sourcing aggregates in Haskell.
-  At first, I'll give a brief implementation of projections using foldl along with an example.
+  First I'll give a brief implementation of projections using `foldl` along with an example.
   After that, I explain my approach of using a simple Monad transformer stack to implement aggregates and make actions composable.
 tags: Event Sourcing, Haskell, Domain-Driven Design
 discussId: post-1
@@ -12,25 +12,21 @@ discussId: post-1
 ## Introduction ##
 
 First of all, welcome. This is boring Haskell, so if you're looking for exciting Haskell this might not be the right blog.
-I consider myself a beginner Haskell programmer that has reached productivity level.
-I also do mostly "business" stuff, Domain-Driven Design and sending around domain events.
+I consider myself a beginner Haskell programmer that has reached productivity level. I also do mostly "business" stuff, Domain-Driven Design and sending around domain events.
 
 In this first post I'll be digging into eventsourced aggregates in Haskell. If you are unfamiliar with event sourcing, you might want to get a quick introduction [here](https://docs.microsoft.com/en-us/azure/architecture/patterns/event-sourcing).
+
 It basically means that instead of persisting some state like "Johns account balance is 100 €" you keep track of the changes to Johns account "First he deposited 125 €, then withdrew 25 €". Aggregates protect invariants like "John can only withdraw 25 € if he actually has enough money on his account". There is obviously _a lot_ more to it, but for the purpose of this blog post this is all I care about.
 
-At first I will introduce projections (aka folds) that are used to derive state from event streams.
-Then I will show one possible implementation of aggregates using a Monad transformer stack.
+At first I will introduce projections (aka folds) that are used to derive state from event streams. Then I will show one possible implementation of aggregates using a Monad transformer stack.
 
 I will try to provide enough examples so that no previous knowledge is required. There is a comment section below in case of questions.
 
 ## Projections ##
 
-The technical core of event sourcing is deriving state from a series of domain events.
-In event sourcing terms this is referred to as "projection" or "projecting state".
-Although one can argue that this term is heavily overloaded, I will just roll with this as I think it's the most common term.
+The technical core of event sourcing is deriving state from a series of domain events. In event sourcing terms this is referred to as "projection" or "projecting state". Although one can argue that this term is heavily overloaded, I will use it as I think it's the most common term.
 
-Projections are ubiquitous in all eventsourced applications. Some serve as read models where others
-serve as state for validating invariants.
+Projections are ubiquitous in all eventsourced applications. Some serve as read models where others serve as state for validating invariants.
 
 They can be expressed as a fold. Here's the (simplified) type signature for `foldl`:
 
@@ -44,18 +40,15 @@ There are three parts to this function:
 2. `state` is the initial state
 3. `[event]` are the events to be applied to the initial state
 
-The outcome is the final state, after applying all the domain events. This is pretty basic and there is no magic.
-In "the real world", projections will write into databases, websockets and do all sorts of side-effects,
-but at the base it's just processing one event after the other.
+The outcome is the final state, after applying all the domain events. This is pretty basic and there is no magic. In "the real world", projections will write into databases, websockets and do all sorts of side-effects, but at the base it's just processing one event after the other.
 
 ## Example: List of registered users ##
 
 In our fictional application we use event sourcing to keep track of our users.
-A user consists of a `UserName` as well as an `EmailAddress`.
-A user is either registered or archived. Archived users should no longer be visible in the system.
 
-Since we're using event sourcing, the first thing to do is define the appropriate domain events.
-This is the information we'll be saving:
+A user consists of a `UserName` as well as an `EmailAddress`. A user is either registered or archived. Archived users should no longer be visible in the system.
+
+Since we're using event sourcing, the first thing to do is define the appropriate domain events. This is the information we'll be saving:
 
 ```haskell
 -- don't actually do this, use newtype
@@ -71,8 +64,7 @@ data UserEvent
   deriving (Show)
 ```
 
-In order to, for instance, have a list of non archived users a projection is required.
-As I said in the introduction, this can be accomplished by simply folding over the past events:
+In order to, for instance, have a list of non archived users a projection is required. As I said in the introduction, this can be accomplished by simply folding over the past events:
 
 ```haskell
 type UserList = Map UserName User
@@ -152,19 +144,16 @@ registerUser evs uname email
     emailExists = email `elem` fmap emailAddress (elems users)
 ```
 
-So given the past events, this function decides whether the user can actually be registered with the given `UserName` and `EmailAddress`.
-Failures are encoded in the sum type `UserError`. The only possible result in case of success is a list of new events `[UserEvent]`.
+So given the past events this function decides whether the user can actually be registered with the given `UserName` and `EmailAddress`. Failures are encoded in the sum type `UserError`. The only possible result in case of success is a list of new events `[UserEvent]`.
 
-In order to protect invariants, state needs to be derived. This is again a projection.
-I'm re-using the projection from earlier, but usually the states for guarding invariants are different ones than those that are used in the view.
+In order to protect invariants, state needs to be derived. This is again a projection. I'm re-using the projection from earlier, but usually the states for guarding invariants are different ones than those that are used in the view.
 
 There are a few problems when doing this:
 
-* The projection happens inside the function, and each of your aggregate actions must need to project the whole list of events again.
+* The projection happens inside the function, and each of your aggregate actions must project the whole list of events again.
 * Composition is tedious because of the return type (yes, I'm sure you could work around that).
 
-There is a bit more to aggregates. Each aggregate is versioned to prevent committing it to a stream that has been modified in the meantime.
-When committing an aggregate to a stream you have to also specify the version you loaded your aggregate with to prevent it from becoming inconsistent (see 1. for how an event store API might look like).
+There is a bit more to aggregates. Each aggregate is versioned to prevent committing it to a stream that has been modified in the meantime. When committing an aggregate to a stream you have to also specify the version you loaded your aggregate with to prevent it from becoming inconsistent (see 1. for how an event store API might look like).
 
 ### The AggregateAction Monad transformer stack
 
@@ -185,13 +174,13 @@ All in all this screams Monad. More precisely: this screams `State` and `Except`
 
 So let's get over this step by step:
 
-1) I embodied the projection into the data type. This hardly looks like the projection I introduced earlier, but when looking closer it is actually just split up. First of all, the state for a new aggregate is undefined since no events have been raised yet. Because of this, the state is optional and represented as `Maybe state`. In order to produce the initial state the first event is required. This is done with the function `aggInit`. Secondly, the `aggApply` function can operate on existing state and apply newly raised events to the aggregate state. This way the aggregates state is actually applied "on the fly" when composing!
+1) I embodied the projection into the data type. This hardly looks like the projection I introduced earlier, but when looking closer it is actually just split up. First of all, the state for a new aggregate is undefined since no events have been raised yet. Because of this, the state is optional and represented as `Maybe state`. In order to produce the initial state the first event is required. This is done with the function `aggInit`. Secondly, the `aggApply` function can operate on existing state and apply newly raised events to the aggregate state. This way the aggregate's state is actually applied "on the fly" when composing!
 
 2) This is the aggregates version. It is increased as events are raised and when committing to the stream the original version can be calculated by subtracting the number of raised events.
 
 3) In case all our aggregate actions run through, this holds all newly raised events that will be committed to the event stream of the aggregate.
 
-4) The Monad stack. When running an `AggregateAction` the return type will be `Either error (Aggregate event state)`. If you are unfamiliar with this: it's hardly of any relevance, the code examples following don't require knowledge of Monad transformers.
+4) The Monad stack. When running an `AggregateAction` the return type will be `Either error (Aggregate event state)`. If you are unfamiliar with this: it's hardly of any relevance, following the code examples doesn't require knowledge of Monad transformers.
 
 With this Monad stack and data type we can now implement the function `raise` in order to raise new domain events, as well as `runAggregateAction` to run the Monad stack:
 
@@ -220,7 +209,7 @@ runAggregateAction
 runAggregateAction agg action = runExcept (execStateT action agg)
 ```
 
-Let's look at this in action. First thing we can do is specialize the `AggregateAction` type.
+Let's look at this in action. First thing we can do is specialize the `AggregateAction` type:
 
 ```haskell
 type RegistrationAction a
@@ -228,7 +217,8 @@ type RegistrationAction a
 ```
 
 After that we need to define an empty aggregate. This includes specifying the projection to be used.
-In my library I've written a function that takes `aggInit` and `aggApply` as an argument and returns an empty aggregate.
+
+In my library I've written a function that takes `aggInit` and `aggApply` as arguments and returns an empty aggregate:
 
 ```haskell
 newRegisterUserAgg :: Aggregate UserEvent UserList
@@ -284,7 +274,7 @@ main' = do
 Let's reflect on how this improved the original basic aggregate implementation:
 
 #### Procedural code
-Because of the do notation, the code becomes procedural. I guess one could argue about it being more or less readable. I personally think it makes "business code" more readable. First check this invariant, then that invariant and if that succeeds raise an event.
+Because of the `do` notation, the code becomes procedural. I guess one could argue about the readability - I personally think it makes "business code" more readable. First check this invariant then the other invariant and if that succeeds, raise an event.
 
 #### The argument `[UserEvent]` has been factored out
 The argument `[UserEvent]` is no longer required as it is part of the aggregate given when running the action. Compare the function signatures `registerUser` with `registerUser'`:
@@ -293,7 +283,7 @@ The argument `[UserEvent]` is no longer required as it is part of the aggregate 
 * `UserName -> EmailAddress -> RegistrationAction ()`
 
 #### Actions are composable
-Not only is the `AggregateAction` decoupled from the actual projection it also projects state "on the go". This way you can compose multiple `AggregateAction`s and get the guarantee that your state is always up-to-date (this is actually used in "result2").
+Not only is the `AggregateAction` decoupled from the actual projection, it also projects state "on the go". This way you can compose multiple `AggregateAction`s and get a guarantee that your state is always up-to-date (this is actually used in "result2").
 
 #### Automatic handling of the aggregate version
 The aggregates version is also now part of the aggregate data type and automatically increased with each raised event.
@@ -308,19 +298,17 @@ Snapshotting is practically built in: `createSnapshot :: Aggregate event state -
 
 That's a lot of cool stuff I'd say. Please note that is just one of many possible solutions.
 If you want to run the code you can download the file [Tutorial.hs](/raw/eventsourcing-in-haskell/Tutorial.hs) and just load it up wit GHCi.
+
 At the end of the page is the comment section, should you have any questions. Please be kind as this is my first blog post in ages!
 
-There is still one issue left I want to address.
-This requires some "advanced" Haskell knowledge and I won't be explaining what's going on too much.
-So if you're unable to follow along, just come back later!
+There is still one issue left I want to address. This requires some "advanced" Haskell knowledge and I won't be explaining what's going on too much. So if you're unable to follow along, just come back later!
 
 ## Appendix: Error detection and handling
 
-Back when I started with Haskell and looked at some solutions one thing always bugged me: How they handled errors.
+Back when I started with Haskell and looked at some solutions one thing always bugged me: how those solutions handled errors.
 
-So what happens if you have a corrupt stream for some reason?
-Or you have a bug in your projection?
-What about `aggInit` and it having to be a total function (right now this function must produce an initial value for every given event)?
+So what happens if you have a corrupt stream for some reason? Or you have a bug in your projection? What about `aggInit` and it having to be a total function (right now this function must produce an initial value for every given event)?
+
 One could use exceptions but we can do better than that.
 
 Let's look at how we can detect some errors when projecting state:
@@ -335,13 +323,10 @@ projectActiveUsers' = foldl' applySafe
         Just u  -> -- Now what
 ```
 
-That's an obvious contraction. We're getting a `UserRegistered` event but the user is already registered!
-So there must be an error in the stream then, or an bug in the projection, who knows.
-Usually errors like these are not handled in projections however when dealing with loading aggregates I think it would be better
-to detect this, rather than ignoring it.
+That's an obvious contradiction. We're getting a `UserRegistered` event but the user is already registered!
+So there must be an error in the stream then, or an bug in the projection. Usually errors like these are not handled in projections, however, when dealing with loading aggregates I think it would be better to detect this, rather than ignoring it.
 
-Now, how can we handle this then? One obvious way is to throw an exception. Chicken, err, I mean `error` out.
-We can also incorporate failure into the aggregates projection type signature. So let's try that:
+Then how can we handle this? One obvious way is to throw an exception. Chicken, err, I mean `error` out. We can also incorporate failure into the aggregates projection type signature. So let's try that:
 
 ```haskell
 {-# LANGUAGE FlexibleContexts #-}
@@ -396,8 +381,7 @@ insertFirstUser ev =
       throwError (StateDerivingFailure "First event must be UserRegistered.")
 ```
 
-Now `insertFirstUser` actually fails in case the first event isn't `UserRegistered`.
-Normally you'd now also add error detection to the `aggApply` function (I leave this as a task for the reader).
+Now `insertFirstUser` actually fails in case the first event isn't `UserRegistered`. Normally you'd now also add error detection to the `aggApply` function (I leave this as a task for the reader).
 
 Let's run that and see what happens:
 
@@ -418,7 +402,7 @@ main = do
   print (aggState <$> result2)
 ```
 
-That's, in my opinion, a better way to deal with errors than simply ignoring them or throwing exceptions.
+In my opinion, this is a better way to deal with errors than simply ignoring them or throwing exceptions.
 
 If you want to run that code download the files [TutorialError.hs](/raw/eventsourcing-in-haskell/TutorialError.hs) and [TutorialLib.hs](/raw/eventsourcing-in-haskell/TutorialLib.hs).
 
