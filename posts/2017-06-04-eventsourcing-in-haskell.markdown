@@ -51,11 +51,17 @@ A user consists of a `UserName` as well as an `EmailAddress`. A user is either r
 Since we're using event sourcing, the first thing to do is define the appropriate domain events. This is the information we'll be saving:
 
 ```haskell
--- don't actually do this, use newtype
--- (see: https://robots.thoughtbot.com/lessons-learned-avoiding-primitives-in-elm)
--- fun fact: I had a bug writing the examples for this blog post, use newtype.
-type UserName = Text
-type EmailAddress = Text
+newtype UserName = UserName String
+  deriving (Eq, Ord, Show)
+
+newtype EmailAddress = EmailAddress String
+  deriving (Eq, Ord, Show)
+
+instance IsString UserName where
+  fromString = UserName
+
+instance IsString EmailAddress where
+  fromString = EmailAddress
 
 data UserEvent
   = UserRegistered UserName EmailAddress

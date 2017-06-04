@@ -6,7 +6,7 @@ module TutorialError where
 
 import           Data.Map    (Map)
 import qualified Data.Map    as M
-import           Data.Text   (Text)
+import           Data.String
 
 import           TutorialLib
 
@@ -25,8 +25,17 @@ projectActiveUsers' = foldl' applySafe
         Just u -> -- Now what
 --}
 
-type UserName = Text
-type EmailAddress = Text
+newtype UserName = UserName String
+  deriving (Eq, Ord, Show)
+
+newtype EmailAddress = EmailAddress String
+  deriving (Eq, Ord, Show)
+
+instance IsString UserName where
+  fromString = UserName
+
+instance IsString EmailAddress where
+  fromString = EmailAddress
 
 data UserEvent
   = UserRegistered UserName EmailAddress
@@ -77,7 +86,8 @@ apply list ev =
 main :: IO ()
 main = do
   result1 <- runAggregateAction newRegisterUserAgg
-               (load [UserRegistered "user1" "user1@example.com", UserRegistered "user2" "user2@example.com"])
+               (load [UserRegistered "user1" "user1@example.com",
+                      UserRegistered "user2" "user2@example.com"])
 
   result2 <- runAggregateAction newRegisterUserAgg
                (load [UserEmailAddressChanged "user1" "changed@example.com"])

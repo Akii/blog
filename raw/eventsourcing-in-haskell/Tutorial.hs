@@ -7,14 +7,23 @@ import           Control.Monad.State
 import           Data.List            (foldl')
 import           Data.Map             (Map, adjust, delete, elems, insert,
                                        member)
-import           Data.Text            (Text)
+import           Data.String
 
 --------------------------------------------------------
 -- Part 1: Projections
 --------------------------------------------------------
 
-type UserName = Text
-type EmailAddress = Text
+newtype UserName = UserName String
+  deriving (Eq, Ord, Show)
+
+newtype EmailAddress = EmailAddress String
+  deriving (Eq, Ord, Show)
+
+instance IsString UserName where
+  fromString = UserName
+
+instance IsString EmailAddress where
+  fromString = EmailAddress
 
 data UserEvent
   = UserRegistered UserName EmailAddress
