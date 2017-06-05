@@ -242,14 +242,11 @@ Now it's time to implement the new `registerUser'` function:
 ```haskell
 registerUser' :: UserName -> EmailAddress -> RegistrationAction ()
 registerUser' uname email = do
-  mst <- gets aggState
+  st <- gets (fromMaybe mempty . aggState)
 
-  case mst of
-    Nothing -> raise (UserRegistered uname email)
-    Just st -> do
-      when (userExists st) (throwError UserAlreadyRegistered)
-      when (emailExists st) (throwError EmailAddressExists)
-      raise (UserRegistered uname email)
+  when (userExists st) (throwError UserAlreadyRegistered)
+  when (emailExists st) (throwError EmailAddressExists)
+  raise (UserRegistered uname email)
 
   where
     userExists = member uname

@@ -7,6 +7,7 @@ import           Control.Monad.State
 import           Data.List            (foldl')
 import           Data.Map             (Map, adjust, delete, elems, insert,
                                        member)
+import           Data.Maybe           (fromMaybe)
 import           Data.String
 
 --------------------------------------------------------
@@ -128,14 +129,11 @@ newRegisterUserAgg = Aggregate
 
 registerUser' :: UserName -> EmailAddress -> RegistrationAction ()
 registerUser' uname email = do
-  mst <- gets aggState
+  st <- gets (fromMaybe mempty . aggState)
 
-  case mst of
-    Nothing -> raise (UserRegistered uname email)
-    Just st -> do
-      when (userExists st) (throwError UserAlreadyRegistered)
-      when (emailExists st) (throwError EmailAddressExists)
-      raise (UserRegistered uname email)
+  when (userExists st) (throwError UserAlreadyRegistered)
+  when (emailExists st) (throwError EmailAddressExists)
+  raise (UserRegistered uname email)
 
   where
     userExists = member uname
