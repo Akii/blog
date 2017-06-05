@@ -318,7 +318,7 @@ Let's look at how we can detect some errors when projecting state:
 
 ```haskell
 projectActiveUsers' :: [UserEvent] -> UserList
-projectActiveUsers' = foldl' applySafe
+projectActiveUsers' = foldl' applySafe mempty
   where
     applySafe list (UserRegistered uname email) =
       case lookup uname list of

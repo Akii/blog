@@ -16,7 +16,7 @@ import           TutorialLib
 
 {--
 projectActiveUsers' :: [UserEvent] -> UserList
-projectActiveUsers' = foldl' applySafe
+projectActiveUsers' = foldl' applySafe mempty
   where
     applySafe :: UserList -> UserEvent -> UserList
     applySafe list (UserRegistered uname email) =
