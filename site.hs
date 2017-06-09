@@ -43,7 +43,7 @@ main = hakyll $ do
         >>= loadAndApplyTemplate "templates/default.html" archiveCtx
         >>= relativizeUrls
 
-  create ["atom.xml"] $ do
+  create ["feed.atom"] $ do
     route idRoute
     compile $ do
       let feedCtx = postCtx `mappend` summaryContext
