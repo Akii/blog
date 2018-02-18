@@ -3,7 +3,7 @@
 import           Data.Maybe  (fromMaybe)
 import           Data.Monoid (mappend)
 import           Hakyll      hiding (defaultContext)
-import qualified Hakyll      as Hakyll
+import qualified Hakyll
 
 main :: IO ()
 main = hakyll $ do
@@ -13,7 +13,7 @@ main = hakyll $ do
 
   match "raw/**" $ do
     route idRoute
-    compile compressCssCompiler
+    compile copyFileCompiler
 
   match (fromList ["about.rst", "contact.markdown"]) $ do
     route $ setExtension "html"
@@ -70,7 +70,7 @@ postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y" `mappend`
   dateField "day" "%e" `mappend`
-  dateField "month" "%B" `mappend`
+  dateField "month" "%b" `mappend`
   Hakyll.defaultContext
 
 defaultContext :: Context String
