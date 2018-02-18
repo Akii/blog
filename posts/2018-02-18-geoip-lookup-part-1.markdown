@@ -12,7 +12,7 @@ discussId: post-2
 
 One of my first private projects I wrote with Haskell involved fetching GeoIP information from a remote service. Now, roughly 1.5 years later, I want to come back to that implementation and reflect on it. Back then it really excited me, so I thought I should share this experience in a blog post.
 
-Since this blog is explicitly directed to beginners, I will not just simply refactor and abstract my original implementation. I will implement the lookup from scratch. This will give you insight into how to implement this and, more importantly, what the thought process looks like.
+Since this blog is explicitly targeted to beginners, I will not just simply refactor and abstract my original implementation. I will implement the lookup from scratch. This will give you insight into how to implement this and, more importantly, what the thought process looks like.
 
 The goal is to implement a fast and efficient GeoIP lookup that can handle at least 50 lookups per second. The roadmap for that looks like this:
 
@@ -100,7 +100,7 @@ Without actually measuring performance, it's a good estimation that this method 
 
 ## 2. Concurrently looking up IPs <br/><small>Code: src/Chapter2.hs <a href="https://github.com/Akii/geoip-lookup/blob/master/src/Chapter2.hs" target="_blank"><i class="fa fa-github"></i></a></small>
 
-There are many ways of performing IO actions concurrently or in parallel. Choosing the right method heavily depends on the use-case. I can highly recommend Simon Marlows book <a href="https://simonmar.github.io/pages/pcph.html" target="_blank">Parallel and Concurrent Programming in Haskell</a>, which is the de-facto standard literature on that subject.
+There are many ways of performing IO actions concurrently or in parallel. Choosing the right method heavily depends on the use-case. I can highly recommend Simon Marlow's book <a href="https://simonmar.github.io/pages/pcph.html" target="_blank">Parallel and Concurrent Programming in Haskell</a>, which is the de-facto standard literature on that subject.
 
 In my private project I had an event stream of IP addresses to look up. That made it impossible to concurrently map a static list. Additionally, I wasn't sure how many IPs I would have to look up at a certain time and I didn't want to have an unlimited amount of concurrent requests going out. Because of that I decided to use TQueue, a queue from the STM library (<a href="https://hackage.haskell.org/package/stm-2.4.5.0/docs/Control-Concurrent-STM-TQueue.html" target="_blank">TQueue on Hackage</a>) and have a fixed number of workers process the queue. So let's start with the data types and API.
 
@@ -117,7 +117,7 @@ In my private project I had an event stream of IP addresses to look up. That mad
 1. We'll need some sort of data type holding the queue and lookup function.
 2. You probably already noticed that the function `fetchGeoIP`, that we wrote in chapter 1, is throwing exceptions. This means looking up geo IP information can fail. At some point we will need to handle this. There is the possibility to make `LookupResult` a sum type and include a failure case. I chose to use this representation instead.
 3. The idea behind this function is to have a way of creating a value of type `GeoIPLookup`. We already know we're going to have a number of worker threads, so that is one argument. We also need a way of looking up IP information, that's the second argument. Creating a new TQueue requires IO, thus the return type must be `IO GeoIPLookup`.
-4. This function will serve as our new way of looking up IPs. It will take a `GeoIPLookup` and `IPAddress` as input and produce a value that will eventually hold the `JobResult`. So this function will insert the IP address into the queue and then offer a way of "waiting" until the lookup has been processed. This is encoded as `Async` from the library <a href="https://hackage.haskell.org/package/async">async</a>.
+4. This function will serve as our new way of looking up IPs. It will take a `GeoIPLookup` and `IPAddress` as argument and produce a value that will eventually hold the `JobResult`. So this function will insert the IP address into the queue and then offer a way of "waiting" until the lookup has been processed. This is encoded as `Async` from the library <a href="https://hackage.haskell.org/package/async">async</a>.
 5. By using the function `worker`, this function will create a number of worker threads.
 6. The definition of what a single worker will do.
 
@@ -146,7 +146,7 @@ lookupIP l ipAddr = async $ do
       Just res -> return res
 ```
 
-TVar and TQueue both come from the STM library. STM stands for software transactional memory and enables us to manipulate variables inside transactions (think: database transaction). Let me briefly explain the used functions. Consult Marlows book for a more detailed and complete STM introduction.
+TVar and TQueue both come from the STM library. STM stands for software transactional memory and enables us to manipulate variables inside transactions (think: database transaction). Let me briefly explain the used functions. Consult Marlow's book for a more detailed and complete STM introduction.
 
 ```haskell
 [1] atomically :: STM a -> IO a
