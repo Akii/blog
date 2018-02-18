@@ -41,7 +41,7 @@ import           Network.HTTP.Simple
 -- | Represents an IP address like 172.217.22.46
 newtype IPAddress = IPAddress
   { getAddress :: String
-  } deriving (Show, Generic, FromJSON)
+  }
 
 -- | Allows us to write ("172.217.22.46" :: IPAddress)
 instance IsString IPAddress where
@@ -96,11 +96,11 @@ lookupAll =
 > ...
 ```
 
-Without actually measuring the performance, it's a good estimation that this method can lookup around 4 IPs per second. It's about time to distribute the work onto multiple threads.
+Without actually measuring performance, it's a good estimation that this method can lookup around 4 IPs per second. It's about time to distribute the work between multiple threads.
 
 ## 2. Concurrently looking up IPs <br/><small>Code: src/Chapter2.hs <a href="https://github.com/Akii/geoip-lookup/blob/master/src/Chapter2.hs" target="_blank"><i class="fa fa-github"></i></a></small>
 
-There are many ways of performing IO actions concurrently or in parallel. It also depends on the use-case. I can highly recommend Simon Marlows book <a href="https://simonmar.github.io/pages/pcph.html" target="_blank">Parallel and Concurrent Programming in Haskell</a>, which is the de-facto standard literature on that subject.
+There are many ways of performing IO actions concurrently or in parallel. Choosing the right method heavily depends on the use-case. I can highly recommend Simon Marlows book <a href="https://simonmar.github.io/pages/pcph.html" target="_blank">Parallel and Concurrent Programming in Haskell</a>, which is the de-facto standard literature on that subject.
 
 In my private project I had an event stream of IP addresses to look up. That made it impossible to concurrently map a static list. Additionally, I wasn't sure how many IPs I would have to look up at a certain time and I didn't want to have an unlimited amount of concurrent requests going out. Because of that I decided to use TQueue, a queue from the STM library (<a href="https://hackage.haskell.org/package/stm-2.4.5.0/docs/Control-Concurrent-STM-TQueue.html" target="_blank">TQueue on Hackage</a>) and have a fixed number of workers process the queue. So let's start with the data types and API.
 
