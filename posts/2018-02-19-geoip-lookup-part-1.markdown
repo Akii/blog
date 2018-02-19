@@ -12,7 +12,7 @@ discussId: post-2
 
 One of my first private projects I wrote with Haskell involved fetching GeoIP information from a remote service. Now, roughly 1.5 years later, I want to come back to that implementation and reflect on it. Back then it really excited me, so I thought I should share this experience in a blog post.
 
-Since this blog is explicitly targeted to beginners, I will not just simply refactor and abstract my original implementation. I will implement the lookup from scratch. This will give you insight into how to implement this and, more importantly, what the thought process looks like.
+Since this blog is explicitly targeted at beginners, I will not just simply refactor and abstract my original implementation. I will implement the lookup from scratch. This will give you insight into how to implement this and, more importantly, what the thought process looks like.
 
 The goal is to implement a fast and efficient GeoIP lookup that can handle at least 50 lookups per second. The roadmap for that looks like this:
 
@@ -28,7 +28,7 @@ The following resources are accompanying this post:
 
 ## 1. Looking up geo information for IPv4 addresses <br/><small>Code: src/Chapter1.hs <a href="https://github.com/Akii/geoip-lookup/blob/master/src/Chapter1.hs" target="_blank"><i class="fa fa-github"></i></a></small>
 
-The first step is to implement querying the remote service. This is fairly straight forward with two libraries: aeson and http-conduit. First we define the data types. For convenience I simply derive the FromJSON instance.
+The first step is to implement querying the remote service. This is fairly straight forward with two libraries: <a href="https://hackage.haskell.org/package/aeson" target="_blank">aeson</a> and <a href="https://hackage.haskell.org/package/http-conduit" target="_blank">http-conduit</a>. First we define the data types. For convenience I simply derive the FromJSON instance.
 
 ```haskell
 {-# LANGUAGE DeriveAnyClass #-}
